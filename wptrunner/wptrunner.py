@@ -216,7 +216,8 @@ def run_tests(config, test_paths, product, **kwargs):
                                       kwargs["pause_after_test"],
                                       kwargs["pause_on_unexpected"],
                                       kwargs["restart_on_unexpected"],
-                                      kwargs["debug_info"]) as manager_group:
+                                      kwargs["debug_info"],
+                                      kwargs["reuse_browser"]) as manager_group:
                         try:
                             manager_group.run(test_type, test_loader.tests)
                         except KeyboardInterrupt:

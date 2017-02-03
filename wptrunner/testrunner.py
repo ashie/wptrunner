@@ -168,7 +168,8 @@ class TestRunnerManager(threading.Thread):
 
     def __init__(self, suite_name, test_queue, test_source_cls, browser_cls, browser_kwargs,
                  executor_cls, executor_kwargs, stop_flag, pause_after_test=False,
-                 pause_on_unexpected=False, restart_on_unexpected=True, debug_info=None):
+                 pause_on_unexpected=False, restart_on_unexpected=True, debug_info=None,
+                 reuse_browser=False):
         """Thread that owns a single TestRunner process and any processes required
         by the TestRunner (e.g. the Firefox binary).
 
@@ -209,6 +210,7 @@ class TestRunnerManager(threading.Thread):
         self.pause_on_unexpected = pause_on_unexpected
         self.restart_on_unexpected = restart_on_unexpected
         self.debug_info = debug_info
+        self.reuse_browser = reuse_browser
 
         self.manager_number = next_manager_number()
 
@@ -350,7 +352,8 @@ class TestRunnerManager(threading.Thread):
             try:
                 if self.init_timer is not None:
                     self.init_timer.start()
-                self.browser.start()
+                if not self.reuse_browser or not self.browser.is_alive():
+                    self.browser.start()
                 self.browser_pid = self.browser.pid()
                 self.start_test_runner(test_queue)
             except:
@@ -434,6 +437,8 @@ class TestRunnerManager(threading.Thread):
 
     def teardown(self):
         self.logger.debug("teardown in testrunnermanager")
+        self.browser.stop()
+        self.browser_started = False
         self.test_runner_proc = None
         self.command_queue.close()
         self.remote_queue.close()
@@ -463,8 +468,9 @@ class TestRunnerManager(threading.Thread):
         if self.test_runner_proc is None:
             return
         try:
-            self.browser.stop()
-            self.browser_started = False
+            if not self.reuse_browser:
+                self.browser.stop()
+                self.browser_started = False
             if self.test_runner_proc.is_alive():
                 self.send_message("stop")
                 self.ensure_runner_stopped()
@@ -596,7 +602,8 @@ class ManagerGroup(object):
                  pause_after_test=False,
                  pause_on_unexpected=False,
                  restart_on_unexpected=True,
-                 debug_info=None):
+                 debug_info=None,
+                 reuse_browser=False):
         """Main thread object that owns all the TestManager threads."""
         self.suite_name = suite_name
         self.size = size
@@ -610,6 +617,7 @@ class ManagerGroup(object):
         self.pause_on_unexpected = pause_on_unexpected
         self.restart_on_unexpected = restart_on_unexpected
         self.debug_info = debug_info
+        self.reuse_browser = reuse_browser
 
         self.pool = set()
         # Event that is polled by threads so that they can gracefully exit in the face
@@ -648,7 +656,8 @@ class ManagerGroup(object):
                                             self.pause_after_test,
                                             self.pause_on_unexpected,
                                             self.restart_on_unexpected,
-                                            self.debug_info)
+                                            self.debug_info,
+                                            self.reuse_browser)
                 manager.start()
                 self.pool.add(manager)
             self.wait()

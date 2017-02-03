@@ -64,6 +64,8 @@ scheme host and port.""")
 
     parser.add_argument("--no-capture-stdio", action="store_true", default=False,
                         help="Don't capture stdio and write to logging")
+    parser.add_argument('--reuse-browser', dest="reuse_browser", action="store_true", default=None,
+                        help="Don't restart the browser. Use the same browser process for all tests.")
 
     mode_group = parser.add_argument_group("Mode")
     mode_group.add_argument("--list-test-groups", action="store_true",
