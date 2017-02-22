@@ -177,6 +177,9 @@ scheme host and port.""")
                              help="Path to directory containing assertion stack fixing scripts")
     gecko_group.add_argument("--marionette-port", dest="marionette_port", type=int, action="store",
                              help="Use specific port for controlling Gecko instead of searching unused port")
+    gecko_group.add_argument("--use-existing-gecko", dest="use_existing_gecko", action="store_true",
+                             default=None,
+                             help="Use existing Gecko process instead of launching new one")
 
     servo_group = parser.add_argument_group("Servo-specific")
     servo_group.add_argument("--user-stylesheet",

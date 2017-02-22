@@ -60,7 +60,8 @@ def browser_kwargs(**kwargs):
             "e10s": kwargs["gecko_e10s"],
             "stackfix_dir": kwargs["stackfix_dir"],
             "binary_args": kwargs["binary_args"],
-            "marionette_port": kwargs["marionette_port"]}
+            "marionette_port": kwargs["marionette_port"],
+            "use_existing_gecko": kwargs["use_existing_gecko"]}
 
 
 def executor_kwargs(test_type, server_config, cache_manager, run_info_data,
@@ -111,7 +112,7 @@ class FirefoxBrowser(Browser):
     def __init__(self, logger, binary, prefs_root, debug_info=None,
                  symbols_path=None, stackwalk_binary=None, certutil_binary=None,
                  ca_certificate_path=None, e10s=False, stackfix_dir=None,
-                 binary_args=None, marionette_port=None):
+                 binary_args=None, marionette_port=None, use_existing_gecko=None):
         Browser.__init__(self, logger)
         self.binary = binary
         self.prefs_root = prefs_root
@@ -125,6 +126,7 @@ class FirefoxBrowser(Browser):
         self.certutil_binary = certutil_binary
         self.e10s = e10s
         self.binary_args = binary_args
+        self.use_existing_gecko = use_existing_gecko
         if self.symbols_path and stackfix_dir:
             self.stack_fixer = get_stack_fixer_function(stackfix_dir,
                                                         self.symbols_path)
@@ -174,6 +176,10 @@ class FirefoxBrowser(Browser):
                                     process_class=ProcessHandler,
                                     process_args={"processOutputLine": [self.on_output]})
 
+        if self.use_existing_gecko:
+            self.logger.debug("Don't start Firefox, try to use the existing process")
+            return
+
         self.logger.debug("Starting Firefox")
 
         self.runner.start(debug_args=debug_args, interactive=self.debug_info and self.debug_info.interactive)
@@ -199,6 +205,9 @@ class FirefoxBrowser(Browser):
                 pass
 
     def pid(self):
+        if self.use_existing_gecko:
+            return 0
+
         if self.runner.process_handler is None:
             return None
 
@@ -217,6 +226,8 @@ class FirefoxBrowser(Browser):
                                    command=" ".join(self.runner.command))
 
     def is_alive(self):
+        if self.use_existing_gecko:
+            return True
         if self.runner:
             return self.runner.is_running()
         return False
