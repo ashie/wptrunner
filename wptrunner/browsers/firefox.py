@@ -59,7 +59,8 @@ def browser_kwargs(**kwargs):
             "ca_certificate_path": kwargs["ssl_env"].ca_cert_path(),
             "e10s": kwargs["gecko_e10s"],
             "stackfix_dir": kwargs["stackfix_dir"],
-            "binary_args": kwargs["binary_args"]}
+            "binary_args": kwargs["binary_args"],
+            "marionette_port": kwargs["marionette_port"]}
 
 
 def executor_kwargs(test_type, server_config, cache_manager, run_info_data,
@@ -110,11 +111,11 @@ class FirefoxBrowser(Browser):
     def __init__(self, logger, binary, prefs_root, debug_info=None,
                  symbols_path=None, stackwalk_binary=None, certutil_binary=None,
                  ca_certificate_path=None, e10s=False, stackfix_dir=None,
-                 binary_args=None):
+                 binary_args=None, marionette_port=None):
         Browser.__init__(self, logger)
         self.binary = binary
         self.prefs_root = prefs_root
-        self.marionette_port = None
+        self.marionette_port = marionette_port
         self.runner = None
         self.debug_info = debug_info
         self.profile = None
@@ -131,7 +132,8 @@ class FirefoxBrowser(Browser):
             self.stack_fixer = None
 
     def start(self):
-        self.marionette_port = get_free_port(2828, exclude=self.used_ports)
+        if not self.marionette_port:
+            self.marionette_port = get_free_port(2828, exclude=self.used_ports)
         self.used_ports.add(self.marionette_port)
 
         env = os.environ.copy()

@@ -175,6 +175,8 @@ scheme host and port.""")
                              help="Run tests without electrolysis preferences")
     gecko_group.add_argument("--stackfix-dir", dest="stackfix_dir", action="store",
                              help="Path to directory containing assertion stack fixing scripts")
+    gecko_group.add_argument("--marionette-port", dest="marionette_port", type=int, action="store",
+                             help="Use specific port for controlling Gecko instead of searching unused port")
 
     servo_group = parser.add_argument_group("Servo-specific")
     servo_group.add_argument("--user-stylesheet",
