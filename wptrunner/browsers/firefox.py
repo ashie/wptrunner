@@ -134,8 +134,11 @@ class FirefoxBrowser(Browser):
             self.stack_fixer = None
 
     def start(self):
-        if not self.marionette_port:
-            self.marionette_port = get_free_port(2828, exclude=self.used_ports)
+        if self.marionette_port is None:
+            if self.use_existing_gecko:
+                self.marionette_port = 2828
+            else:
+                self.marionette_port = get_free_port(2828, exclude=self.used_ports)
         self.used_ports.add(self.marionette_port)
 
         env = os.environ.copy()
