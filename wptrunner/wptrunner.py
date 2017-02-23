@@ -213,6 +213,7 @@ def run_tests(config, test_paths, product, **kwargs):
                                       browser_kwargs,
                                       executor_cls,
                                       executor_kwargs,
+                                      kwargs["max_retry_count"],
                                       kwargs["pause_after_test"],
                                       kwargs["pause_on_unexpected"],
                                       kwargs["restart_on_unexpected"],

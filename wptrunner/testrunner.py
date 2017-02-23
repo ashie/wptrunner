@@ -167,7 +167,8 @@ class TestRunnerManager(threading.Thread):
     init_lock = threading.Lock()
 
     def __init__(self, suite_name, test_queue, test_source_cls, browser_cls, browser_kwargs,
-                 executor_cls, executor_kwargs, stop_flag, pause_after_test=False,
+                 executor_cls, executor_kwargs, stop_flag,
+                 max_retry_count=None, pause_after_test=False,
                  pause_on_unexpected=False, restart_on_unexpected=True, debug_info=None):
         """Thread that owns a single TestRunner process and any processes required
         by the TestRunner (e.g. the Firefox binary).
@@ -205,6 +206,7 @@ class TestRunnerManager(threading.Thread):
         self.parent_stop_flag = stop_flag
         self.child_stop_flag = multiprocessing.Event()
 
+        self.max_retry_count = max_retry_count
         self.pause_after_test = pause_after_test
         self.pause_on_unexpected = pause_on_unexpected
         self.restart_on_unexpected = restart_on_unexpected
@@ -230,7 +232,10 @@ class TestRunnerManager(threading.Thread):
         self.daemon = True
 
         self.init_fail_count = 0
-        self.max_init_fails = 5
+        if self.max_retry_count is None:
+            self.max_init_fails = 5
+        else:
+            self.max_init_fails = self.max_retry_count + 1
         self.init_timer = None
 
         self.restart_count = 0
@@ -593,6 +598,7 @@ class ManagerGroup(object):
     def __init__(self, suite_name, size, test_source_cls, test_source_kwargs,
                  browser_cls, browser_kwargs,
                  executor_cls, executor_kwargs,
+                 max_retry_count=None,
                  pause_after_test=False,
                  pause_on_unexpected=False,
                  restart_on_unexpected=True,
@@ -606,6 +612,7 @@ class ManagerGroup(object):
         self.browser_kwargs = browser_kwargs
         self.executor_cls = executor_cls
         self.executor_kwargs = executor_kwargs
+        self.max_retry_count = max_retry_count
         self.pause_after_test = pause_after_test
         self.pause_on_unexpected = pause_on_unexpected
         self.restart_on_unexpected = restart_on_unexpected
@@ -645,6 +652,7 @@ class ManagerGroup(object):
                                             self.executor_cls,
                                             self.executor_kwargs,
                                             self.stop_flag,
+                                            self.max_retry_count,
                                             self.pause_after_test,
                                             self.pause_on_unexpected,
                                             self.restart_on_unexpected,
