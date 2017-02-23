@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+DEFAULT_PORT = 2828
+
 import os
 import platform
 import subprocess
@@ -136,9 +138,9 @@ class FirefoxBrowser(Browser):
     def start(self):
         if self.marionette_port is None:
             if self.use_existing_gecko:
-                self.marionette_port = 2828
+                self.marionette_port = DEFAULT_PORT
             else:
-                self.marionette_port = get_free_port(2828, exclude=self.used_ports)
+                self.marionette_port = get_free_port(DEFAULT_PORT, exclude=self.used_ports)
         self.used_ports.add(self.marionette_port)
 
         env = os.environ.copy()
