@@ -182,6 +182,8 @@ scheme host and port.""")
     gecko_group.add_argument("--use-existing-gecko", dest="use_existing_gecko", action="store_true",
                              default=None,
                              help="Use existing Gecko process instead of launching new one")
+    gecko_group.add_argument("--connection-timeout", action="store", type=int, default=60,
+                             help="Connection timeout value in seconds for connecting to Marionette server")
 
     servo_group = parser.add_argument_group("Servo-specific")
     servo_group.add_argument("--user-stylesheet",

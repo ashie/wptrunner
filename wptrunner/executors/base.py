@@ -21,6 +21,7 @@ def executor_kwargs(test_type, server_config, cache_manager, **kwargs):
 
     executor_kwargs = {"server_config": server_config,
                        "timeout_multiplier": timeout_multiplier,
+                       "connection_timeout": kwargs["connection_timeout"],
                        "debug_info": kwargs["debug_info"]}
 
     if test_type == "reftest":
@@ -97,6 +98,7 @@ class TestExecutor(object):
     convert_result = None
 
     def __init__(self, browser, server_config, timeout_multiplier=1,
+                 connection_timeout=60,
                  debug_info=None):
         """Abstract Base class for object that actually executes the tests in a
         specific browser. Typically there will be a different TestExecutor
@@ -113,6 +115,7 @@ class TestExecutor(object):
         self.browser = browser
         self.server_config = server_config
         self.timeout_multiplier = timeout_multiplier
+        self.connection_timeout = connection_timeout
         self.debug_info = debug_info
         self.last_environment = {"protocol": "http",
                                  "prefs": {}}
@@ -199,10 +202,11 @@ class TestharnessExecutor(TestExecutor):
 class RefTestExecutor(TestExecutor):
     convert_result = reftest_result_converter
 
-    def __init__(self, browser, server_config, timeout_multiplier=1, screenshot_cache=None,
-                 debug_info=None):
+    def __init__(self, browser, server_config, connection_timeout=60, timeout_multiplier=1,
+                 screenshot_cache=None, debug_info=None):
         TestExecutor.__init__(self, browser, server_config,
                               timeout_multiplier=timeout_multiplier,
+                              connection_timeout=connection_timeout,
                               debug_info=debug_info)
 
         self.screenshot_cache = screenshot_cache

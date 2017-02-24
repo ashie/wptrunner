@@ -59,6 +59,7 @@ class MarionetteProtocol(Protocol):
         self.marionette = None
         self.marionette_port = browser.marionette_port
         self.timeout = None
+        self.connection_timeout = executor.connection_timeout
         self.runner_handle = None
 
     def setup(self, runner):
@@ -73,7 +74,7 @@ class MarionetteProtocol(Protocol):
         # XXX Move this timeout somewhere
         self.logger.debug("Waiting for Marionette connection")
         while True:
-            success = self.marionette.wait_for_port(60)
+            success = self.marionette.wait_for_port(self.connection_timeout)
             #When running in a debugger wait indefinitely for firefox to start
             if success or self.executor.debug_info is None:
                 break
@@ -376,10 +377,11 @@ class ExecuteAsyncScriptRun(object):
 
 
 class MarionetteTestharnessExecutor(TestharnessExecutor):
-    def __init__(self, browser, server_config, timeout_multiplier=1,
+    def __init__(self, browser, server_config, connection_timeout=60, timeout_multiplier=1,
                  close_after_done=True, debug_info=None, **kwargs):
         """Marionette-based executor for testharness.js tests"""
         TestharnessExecutor.__init__(self, browser, server_config,
+                                     connection_timeout=connection_timeout,
                                      timeout_multiplier=timeout_multiplier,
                                      debug_info=debug_info)
 
@@ -438,7 +440,8 @@ class MarionetteTestharnessExecutor(TestharnessExecutor):
 
 
 class MarionetteRefTestExecutor(RefTestExecutor):
-    def __init__(self, browser, server_config, timeout_multiplier=1,
+    def __init__(self, browser, server_config,
+                 connection_timeout=60, timeout_multiplier=1,
                  screenshot_cache=None, close_after_done=True,
                  debug_info=None, **kwargs):
 
@@ -447,6 +450,7 @@ class MarionetteRefTestExecutor(RefTestExecutor):
                                  browser,
                                  server_config,
                                  screenshot_cache=screenshot_cache,
+                                 connection_timeout=connection_timeout,
                                  timeout_multiplier=timeout_multiplier,
                                  debug_info=debug_info)
         self.protocol = MarionetteProtocol(self, browser)
