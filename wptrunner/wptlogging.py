@@ -31,7 +31,7 @@ def disable_logger_coloring(logger):
             handler.terminal = None
 
 def setup(args, defaults):
-    logger = commandline.setup_logging("web-platform-tests", args, defaults, options)
+    logger = commandline.setup_logging("web-platform-tests", args, defaults)
     disable_logger_coloring(logger)
     setup_stdlib_logger()
 
