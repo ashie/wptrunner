@@ -8,10 +8,31 @@ import threading
 from StringIO import StringIO
 from multiprocessing import Queue
 
-from mozlog import commandline, stdadapter
+from mozlog import commandline, stdadapter, formatters, handlers
+
+def disable_logger_coloring(logger):
+    for handler in logger._state.handlers:
+        while not isinstance(handler, formatters.base.BaseFormatter) and isinstance(handler, handlers.base.BaseHandler):
+            # StreamHandler
+            if hasattr(handler, "formatter"):
+                handler = handler.formatter
+                continue
+
+            # LogLevelFilter
+            if hasattr(handler, "inner"):
+                handler = handler.inner
+                continue
+
+            break
+
+        if isinstance(handler, formatters.MachFormatter):
+            # Disable color
+            assert hasattr(handler, "terminal")
+            handler.terminal = None
 
 def setup(args, defaults):
-    logger = commandline.setup_logging("web-platform-tests", args, defaults)
+    logger = commandline.setup_logging("web-platform-tests", args, defaults, options)
+    disable_logger_coloring(logger)
     setup_stdlib_logger()
 
     for name in args.keys():
